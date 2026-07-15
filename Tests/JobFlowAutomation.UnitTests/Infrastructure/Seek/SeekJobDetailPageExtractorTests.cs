@@ -3,7 +3,6 @@ using JobFlowAutomation.Infrastructure.Seek;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 using OpenQA.Selenium;
-using Xunit;
 
 namespace JobFlowAutomation.UnitTests.Infrastructure.Seek;
 
