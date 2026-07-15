@@ -1,23 +1,29 @@
 [CmdletBinding()]
 param(
-    [switch]$VerifyNoChanges
+    [switch] $VerifyNoChanges
 )
 
+Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
+$ProgressPreference = "SilentlyContinue"
 
 $projectRoot = Split-Path -Parent $PSScriptRoot
+$solutionPath = Join-Path $projectRoot "JobFlowAutomation.slnx"
+$coverageSettingsPath = Join-Path $projectRoot "coverlet.runsettings"
+$testResultsPath = Join-Path $projectRoot "TestResults"
+$coverageReportPath = Join-Path $projectRoot "CoverageReport"
+$coverageInputPattern = Join-Path $testResultsPath "**/coverage.cobertura.xml"
 
-$solutionPath = Join-Path `
-    $projectRoot `
-    "JobFlowAutomation.slnx"
+function Assert-RequiredFile {
+    param(
+        [Parameter(Mandatory)]
+        [string] $Path
+    )
 
-$coverageSettingsPath = Join-Path `
-    $projectRoot `
-    "coverlet.runsettings"
-
-$testResultsPath = Join-Path `
-    $projectRoot `
-    "TestResults"
+    if (-not (Test-Path -Path $Path -PathType Leaf)) {
+        throw "Required file was not found: $Path"
+    }
+}
 
 function Invoke-DotNet {
     param(
@@ -35,23 +41,35 @@ function Invoke-DotNet {
     }
 }
 
+Assert-RequiredFile -Path $solutionPath
+Assert-RequiredFile -Path $coverageSettingsPath
+
 Push-Location $projectRoot
 
 try {
     Write-Host ""
     Write-Host "Starting project quality checks..." -ForegroundColor Green
 
-    # Step 1: Restore NuGet packages.
+    Write-Host ""
+    Write-Host "Restoring .NET tools..." -ForegroundColor Yellow
+
+    Invoke-DotNet @(
+        "tool",
+        "restore"
+    )
+
+    Write-Host ""
+    Write-Host "Restoring NuGet packages..." -ForegroundColor Yellow
+
     Invoke-DotNet @(
         "restore",
         $solutionPath
     )
 
-    # Step 2: Format the code or verify its formatting.
     if ($VerifyNoChanges) {
         Write-Host ""
-        Write-Host "Checking code formatting..." -ForegroundColor Yellow
-    
+        Write-Host "Verifying code formatting..." -ForegroundColor Yellow
+
         Invoke-DotNet @(
             "format",
             $solutionPath,
@@ -63,8 +81,8 @@ try {
     }
     else {
         Write-Host ""
-        Write-Host "Applying formatting fixes..." -ForegroundColor Yellow
-    
+        Write-Host "Applying code formatting..." -ForegroundColor Yellow
+
         Invoke-DotNet @(
             "format",
             $solutionPath,
@@ -72,11 +90,10 @@ try {
         )
     }
 
-    # Step 3: Build the complete solution.
     Write-Host ""
     Write-Host "Building the solution..." -ForegroundColor Yellow
 
-    Invoke-DotNet @(
+    $buildArguments = @(
         "build",
         $solutionPath,
         "--configuration",
@@ -84,15 +101,18 @@ try {
         "--no-restore"
     )
 
-    # Delete results from the previous run.
-    if (Test-Path $testResultsPath) {
-        Remove-Item `
-            $testResultsPath `
-            -Recurse `
-            -Force
+    if ($env:GITHUB_ACTIONS -eq "true") {
+        $buildArguments += "-p:ContinuousIntegrationBuild=true"
     }
 
-    # Step 4: Run all tests and collect coverage.
+    Invoke-DotNet $buildArguments
+
+    foreach ($generatedPath in @($testResultsPath, $coverageReportPath)) {
+        if (Test-Path $generatedPath) {
+            Remove-Item -Path $generatedPath -Recurse -Force
+        }
+    }
+
     Write-Host ""
     Write-Host "Running tests with code coverage..." -ForegroundColor Yellow
 
@@ -109,12 +129,33 @@ try {
         "--results-directory",
         $testResultsPath,
         "--logger",
-        "console;verbosity=normal"
+        "console;verbosity=normal",
+        "--logger",
+        "trx;LogFilePrefix=test-results"
     )
 
     Write-Host ""
+    Write-Host "Generating the merged coverage report..." -ForegroundColor Yellow
+
+    Invoke-DotNet @(
+        "reportgenerator",
+        "-reports:$coverageInputPattern",
+        "-targetdir:$coverageReportPath",
+        "-reporttypes:Html;Cobertura;MarkdownSummaryGithub;TextSummary",
+        "-title:JobFlowAutomation Code Coverage"
+    )
+
+    $textSummaryPath = Join-Path $coverageReportPath "Summary.txt"
+
+    if (Test-Path $textSummaryPath) {
+        Write-Host ""
+        Get-Content -Path $textSummaryPath
+    }
+
+    Write-Host ""
     Write-Host "All quality checks passed." -ForegroundColor Green
-    Write-Host "Coverage results: $testResultsPath" -ForegroundColor Green
+    Write-Host "Test results: $testResultsPath" -ForegroundColor Green
+    Write-Host "Coverage report: $coverageReportPath" -ForegroundColor Green
 }
 finally {
     Pop-Location
