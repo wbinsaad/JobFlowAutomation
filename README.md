@@ -12,6 +12,7 @@ JobFlowAutomation is a .NET 10 Selenium-based job scraping and workflow automati
 - Selenium services are registered through dependency injection.
 - Logging uses `ILogger<T>` with Serilog console and rolling file sinks.
 - Runtime settings are stored in `appsettings.json` and injected through the Options pattern.
+- Scraped jobs are saved to PostgreSQL with canonical URL deduplication and scrape-run history.
 
 ## Run
 
@@ -26,14 +27,19 @@ Edit `appsettings.json`:
 
 ```json
 {
-  "Scraper": {
-    "Url": "https://au.seek.com/jobs-in-information-communication-technology/in-All-Melbourne-VIC?daterange=1&sortmode=ListedDate",
+  "ConnectionStrings": {
+    "JobFlowDatabase": "Host=localhost;Port=5432;Database=JobFlowAutomation;Username=postgres;Password=postgres"
+  },
+  "SeekScraperOptions": {
+    "SearchPageUrl": "https://au.seek.com/jobs-in-information-communication-technology/in-All-Melbourne-VIC?daterange=1&sortmode=ListedDate",
     "MinDelayMs": 3000,
     "MaxDelayMs": 8000,
     "WaitForKeyBeforeExit": true
   }
 }
 ```
+
+The application canonicalizes each Seek detail URL before saving it, so tracking query parameters do not create duplicate job rows.
 
 ## Logging
 

@@ -2,7 +2,7 @@ namespace JobFlowAutomation.Domain;
 
 public sealed record ExtractionResult<T>(
     T? Value,
-    bool IsSuccess,
+    bool IsSuccessful,
     IReadOnlyList<ExtractionIssue> Issues)
 {
     public static ExtractionResult<T> Success(T value) =>

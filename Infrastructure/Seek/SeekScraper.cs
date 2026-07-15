@@ -12,14 +12,14 @@ public sealed class SeekScraper : IJobScraper
     private readonly SeleniumNavigator _navigator;
     private readonly SeekJobListPageExtractor _listExtractor;
     private readonly SeekJobDetailPageExtractor _detailExtractor;
-    private readonly ScraperOptions _options;
+    private readonly SeekScraperOptions _options;
     private readonly ILogger<SeekScraper> _logger;
 
     public SeekScraper(
         SeleniumNavigator navigator,
         SeekJobListPageExtractor listExtractor,
         SeekJobDetailPageExtractor detailExtractor,
-        IOptions<ScraperOptions> options,
+        IOptions<SeekScraperOptions> options,
         ILogger<SeekScraper> logger)
     {
         _navigator = navigator;
@@ -38,10 +38,10 @@ public sealed class SeekScraper : IJobScraper
     {
         _logger.LogInformation("Seek scraping started");
 
-        _navigator.GoTo(url, SeekSelectors.JobCards);
+        _navigator.NavigateTo(url, SeekSelectors.JobCards);
 
         var summaries = _listExtractor.Extract()
-            .Where(result => result.IsSuccess && result.Value is not null)
+            .Where(result => result.IsSuccessful && result.Value is not null)
             .Select(result => result.Value!)
             .ToList();
 
@@ -58,9 +58,9 @@ public sealed class SeekScraper : IJobScraper
                 _logger.LogInformation(
                     "Opening detail page for {Title} at {Company}",
                     job.Title,
-                    job.Company);
+                    job.AdvertiserName);
 
-                _navigator.GoTo(job.DetailUrl.ToString(), SeekSelectors.Detail.Title);
+                _navigator.NavigateTo(job.DetailUrl.ToString(), SeekSelectors.Detail.Title);
 
                 var delayMs = Random.Shared.Next(_options.MinDelayMs, _options.MaxDelayMs + 1);
 

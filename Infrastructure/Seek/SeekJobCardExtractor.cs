@@ -47,7 +47,7 @@ public sealed class SeekJobCardExtractor
                 new JobSummary(
                     Title: title,
                     DetailUrl: new Uri(href),
-                    Company: company,
+                    AdvertiserName: company,
                     Location: location));
         }
         catch (Exception ex)
@@ -59,11 +59,11 @@ public sealed class SeekJobCardExtractor
         }
     }
 
-    private static IWebElement? SafeFind(IWebElement parent, By by)
+    private static IWebElement? SafeFind(IWebElement parent, By selector)
     {
         try
         {
-            return parent.FindElement(by);
+            return parent.FindElement(selector);
         }
         catch (NoSuchElementException)
         {

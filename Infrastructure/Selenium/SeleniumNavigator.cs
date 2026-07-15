@@ -19,7 +19,7 @@ public sealed class SeleniumNavigator
 
     public IWebDriver Driver => _driver;
 
-    public void GoTo(string url, By? readySelector = null)
+    public void NavigateTo(string url, By? readySelector = null)
     {
         _logger.LogInformation("Navigating to {Url}", url);
 

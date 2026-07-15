@@ -34,13 +34,13 @@ public sealed class SeekJobListPageExtractor
             results.Add(result);
         }
 
-        var successCount = results.Count(result => result.IsSuccess);
-        var failCount = results.Count - successCount;
+        var successCount = results.Count(result => result.IsSuccessful);
+        var failureCount = results.Count - successCount;
 
         _logger.LogInformation(
             "Job card extraction completed. Success={Success}, Fail={Fail}",
             successCount,
-            failCount);
+            failureCount);
 
         return results;
     }
