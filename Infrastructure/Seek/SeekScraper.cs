@@ -1,7 +1,7 @@
 using JobFlowAutomation.Application.Abstractions;
 using JobFlowAutomation.Configuration;
-using JobFlowAutomation.Infrastructure.Selenium;
 using JobFlowAutomation.Domain;
+using JobFlowAutomation.Infrastructure.Selenium;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 

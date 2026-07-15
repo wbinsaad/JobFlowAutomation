@@ -6,5 +6,5 @@ public interface IJobScraper
 {
     IReadOnlyList<JobScrapeResult> Scrape(string url);
 
-    Task<IReadOnlyList<JobScrapeResult>> ScrapeAsync(string url,CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<JobScrapeResult>> ScrapeAsync(string url, CancellationToken cancellationToken = default);
 }

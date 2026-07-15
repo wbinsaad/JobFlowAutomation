@@ -57,11 +57,11 @@ try
     builder.Services.AddTransient<SeekJobListPageExtractor>();
     builder.Services.AddTransient<SeekJobDetailPageExtractor>();
     builder.Services.AddTransient<IJobScraper, SeekScraper>();
-    
+
     builder.Services.AddScoped<
         IJobScrapingWorkflow,
         JobScrapingWorkflow>();
-    
+
     builder.Services.AddHostedService<JobScrapingWorker>();
 
     using var host = builder.Build();
