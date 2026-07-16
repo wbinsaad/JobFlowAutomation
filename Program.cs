@@ -26,12 +26,30 @@ try
 {
     var builder = Host.CreateApplicationBuilder(args);
 
+    builder.Configuration.AddJsonFile(
+        "appsettings.Local.json",
+        optional: true,
+        reloadOnChange: false);
+
+    // Restore production-friendly precedence:
+    // environment variables and command-line values
+    // must override local JSON configuration.
+    builder.Configuration.AddEnvironmentVariables();
+
+    if (args.Length > 0)
+    {
+        builder.Configuration.AddCommandLine(args);
+    }
+
     builder.Logging.ClearProviders();
     builder.Logging.AddSerilog(Log.Logger, dispose: true);
 
     builder.Services.Configure<SeekScraperOptions>(
         builder.Configuration.GetSection(
             SeekScraperOptions.ConfigurationSectionName));
+
+    builder.Services.AddCvSelectionOptions(
+    builder.Configuration);
 
     var connectionString = builder.Configuration.GetConnectionString("JobFlowDatabase");
 
