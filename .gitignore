@@ -60,3 +60,6 @@ nunit-*.xml
 # Test and coverage output
 TestResults/
 CoverageReport/
+
+# Local machine configuration
+appsettings.Local.json
