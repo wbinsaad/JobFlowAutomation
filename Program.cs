@@ -51,6 +51,10 @@ try
     builder.Services.AddCvSelectionOptions(
     builder.Configuration);
 
+    builder.Services.AddSingleton<
+    ICvSelector,
+    CvSelector>();
+
     var connectionString = builder.Configuration.GetConnectionString("JobFlowDatabase");
 
     if (string.IsNullOrWhiteSpace(connectionString))
