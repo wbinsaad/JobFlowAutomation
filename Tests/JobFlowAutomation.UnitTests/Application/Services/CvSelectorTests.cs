@@ -319,6 +319,134 @@ public sealed class CvSelectorTests
                 string.Empty));
     }
 
+    [Theory]
+    [InlineData(
+        "SoftwareEngineer",
+        @"C:\TestData\SoftwareEngineer.pdf",
+        "software engineer",
+        "Senior Software Engineer")]
+    [InlineData(
+        "PythonDeveloper",
+        @"C:\TestData\PythonDeveloper.pdf",
+        "python developer",
+        "Senior Python Developer")]
+    public void Select_WhenTitleMatchesConfiguredProfile_ReturnsExpectedCv(
+        string profileName,
+        string filePath,
+        string titleKeyword,
+        string jobTitle)
+    {
+        // Arrange
+        CvSelector selector = CreateSelector(
+            CreateProfile(
+                name: profileName,
+                filePath: filePath,
+                priority: 100,
+                titleKeywords:
+                [
+                    titleKeyword
+                ]));
+
+        // Act
+        var result = selector.Select(
+            jobTitle,
+            jobDescription: null);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(
+            profileName,
+            result.ProfileName);
+        Assert.Equal(
+            filePath,
+            result.FilePath);
+    }
+
+    [Fact]
+    public void Select_WhenConfiguredKeywordsAreDuplicated_CountsEachKeywordOnce()
+    {
+        // Arrange
+        CvSelector selector = CreateSelector(
+            CreateProfile(
+                name: "DotNetDeveloper",
+                filePath: @"C:\TestData\DotNetDeveloper.pdf",
+                priority: 100,
+                titleKeywords:
+                [
+                    ".net developer",
+                    "  .NET    DEVELOPER  "
+                ],
+                descriptionKeywords:
+                [
+                    "c#",
+                    " C# "
+                ]));
+
+        // Act
+        var result = selector.Select(
+            ".NET Developer",
+            "Build services using C#.");
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(
+            110,
+            result.Score);
+        Assert.Single(
+            result.MatchedTitleKeywords);
+        Assert.Single(
+            result.MatchedDescriptionKeywords);
+    }
+
+    [Fact]
+    public void Select_WhenConfigurationChangesAfterConstruction_UsesOriginalSnapshot()
+    {
+        // Arrange
+        CvProfileOptions profile = CreateProfile(
+            name: "SoftwareEngineer",
+            filePath: @"C:\TestData\SoftwareEngineer.pdf",
+            priority: 100,
+            titleKeywords:
+            [
+                "software engineer"
+            ]);
+
+        var options = new CvSelectionOptions
+        {
+            Enabled = true,
+            RequireManualApproval = true,
+            Profiles =
+            [
+                profile
+            ]
+        };
+
+        var selector = new CvSelector(
+            Options.Create(options),
+            NullLogger<CvSelector>.Instance);
+
+        profile.Name = "ChangedProfile";
+        profile.FilePath =
+            @"C:\TestData\Changed.pdf";
+        profile.TitleKeywords[0] =
+            "python developer";
+        options.Profiles.Clear();
+
+        // Act
+        var result = selector.Select(
+            "Software Engineer",
+            jobDescription: null);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(
+            "SoftwareEngineer",
+            result.ProfileName);
+        Assert.Equal(
+            @"C:\TestData\SoftwareEngineer.pdf",
+            result.FilePath);
+    }
+
     private static CvSelector CreateSelector(
         params CvProfileOptions[] profiles)
     {
