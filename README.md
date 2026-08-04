@@ -41,6 +41,23 @@ Edit `appsettings.json`:
 
 The application canonicalizes each Seek detail URL before saving it, so tracking query parameters do not create duplicate job rows.
 
+## Supported CV files
+
+Configured CV paths must:
+
+- Be absolute paths.
+- Point to an existing file.
+- Use one of these extensions:
+  - `.pdf`
+  - `.doc`
+  - `.docx`
+
+Extension matching is case-insensitive.
+
+The validator checks the path, file existence and extension. It does not
+inspect the document contents or verify that the contents match the extension.
+CV files and `appsettings.Local.json` must not be committed to source control.
+
 ## Logging
 
 Logs are written to:
