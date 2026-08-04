@@ -2,6 +2,7 @@ using JobFlowAutomation.Application.Abstractions;
 using JobFlowAutomation.Application.Services;
 using JobFlowAutomation.Configuration;
 using JobFlowAutomation.Hosting.Workers;
+using JobFlowAutomation.Infrastructure.FileSystem;
 using JobFlowAutomation.Infrastructure.Persistence;
 using JobFlowAutomation.Infrastructure.Seek;
 using JobFlowAutomation.Infrastructure.Selenium;
@@ -54,6 +55,10 @@ try
     builder.Services.AddSingleton<
     ICvSelector,
     CvSelector>();
+
+    builder.Services.AddSingleton<
+    ICvFileValidator,
+    CvFileValidator>();
 
     var connectionString = builder.Configuration.GetConnectionString("JobFlowDatabase");
 
