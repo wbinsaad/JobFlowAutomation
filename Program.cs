@@ -60,6 +60,10 @@ try
     ICvFileValidator,
     CvFileValidator>();
 
+    builder.Services.AddTransient<
+    IApplicationPreparationService,
+    ApplicationPreparationService>();
+
     var connectionString = builder.Configuration.GetConnectionString("JobFlowDatabase");
 
     if (string.IsNullOrWhiteSpace(connectionString))
