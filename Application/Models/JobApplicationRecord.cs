@@ -1,0 +1,26 @@
+namespace JobFlowAutomation.Application.Models;
+
+public sealed record JobApplicationRecord(
+    Guid Id,
+    Guid JobListingId,
+    string CanonicalJobUrl,
+    string JobTitle,
+    string? Company,
+    string SelectedCvProfile,
+    string SelectedCvFileName,
+    int SelectionScore,
+    IReadOnlyList<string> MatchedTitleKeywords,
+    IReadOnlyList<string> MatchedDescriptionKeywords,
+    JobApplicationStatus Status,
+    bool RequiresManualApproval,
+    DateTimeOffset? ApprovedAtUtc,
+    DateTimeOffset? PreparedAtUtc,
+    DateTimeOffset? SubmittedAtUtc,
+    DateTimeOffset? SkippedAtUtc,
+    DateTimeOffset? RejectedAtUtc,
+    DateTimeOffset? FailedAtUtc,
+    string? FailureCode,
+    string? FailureMessage,
+    DateTimeOffset CreatedAtUtc,
+    DateTimeOffset UpdatedAtUtc,
+    uint Version);
