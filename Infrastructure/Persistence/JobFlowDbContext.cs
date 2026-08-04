@@ -13,6 +13,8 @@ public sealed class JobFlowDbContext : DbContext
 
     public DbSet<JobScrapeRunEntity> JobScrapeRuns => Set<JobScrapeRunEntity>();
 
+    public DbSet<JobApplicationEntity> JobApplications => Set<JobApplicationEntity>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -87,5 +89,7 @@ public sealed class JobFlowDbContext : DbContext
                 .HasForeignKey(x => x.JobListingId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
+
+        modelBuilder.ApplyConfiguration(new JobApplicationEntityConfiguration());
     }
 }
